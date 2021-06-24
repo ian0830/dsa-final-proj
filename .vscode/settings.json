@@ -1,6 +1,11 @@
 {
     "files.associations": {
-        "api.h": "c"
+        "api.h": "c",
+        "expressionmatch.h": "c",
+        "tokenbst.h": "c",
+        "findsimilar.h": "c",
+        "stdio.h": "c",
+        "groupanalyse.h": "c"
     },
-    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4}"
+    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false}"
 }

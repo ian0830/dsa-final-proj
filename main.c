@@ -1,10 +1,8 @@
-#include <stdio.h>
-
 #include "api.h"
+#include "tokenBst.h"
 #include "expressionMatch.h"
 #include "findSimilar.h"
 #include "groupAnalyse.h"
-#include "tokenBst.h"
 
 // The testdata only contains the first 100 mails (mail1 ~ mail100)
 // and 2000 queries for you to debug.
