@@ -2,3 +2,4 @@ testdata/test.ans
 main
 validator/validator
 validator/validator.exe
+*.output

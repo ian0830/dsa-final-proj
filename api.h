@@ -78,6 +78,10 @@ void _answer(int qid, int answers[], int len){
     	digest ^= (unsigned long long)answers[i];
     	digest = ~digest;
 	}
+	
+	fprintf(stderr, "%d: ", qid);
+	for(int i = 0; i < len; i++) fprintf(stderr, "%d ", answers[i]);
+	fprintf(stderr, "\n");
 	printf("%d %llx\n", qid, digest);
 }
 
