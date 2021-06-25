@@ -17,5 +17,6 @@
         "string_view": "c",
         "iostream": "cpp"
     },
-    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false, ColumnLimit: 0}"
+    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false, ColumnLimit: 0}",
+    "C_Cpp.errorSquiggles": "Enabled"
 }
