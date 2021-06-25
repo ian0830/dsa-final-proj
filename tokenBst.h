@@ -64,21 +64,21 @@ bool isValid(char c) {
 Node** generateTokenBSTs(mail* mails, int length) {
     Node** tokenBSTs = malloc(sizeof(Node*) * length);
     for (int i = 0; i < length; i++) {
-        Node* tokenBST = tokenBSTs[i];
+        Node* tokenBST = malloc(sizeof(Node));
         mail m = mails[i];
-        char token[contentSize + 1];
-        int tokenIndex = 0, contentIndex = 0;
+        char * token = malloc(sizeof(char) * (contentSize * 2));
+        int tokenStartIndex = 0, tokenCurrentIndex = 0, contentIndex = 0;
         while (m.content[contentIndex] != '\0') {
             if (isValid(m.content[contentIndex])) {
-                token[tokenIndex++] = m.content[contentIndex];
-            } else if (tokenIndex != 0) {
-                token[tokenIndex] = '\0';
-                insert(tokenBST, token);
-                tokenIndex = 0;
+                token[tokenCurrentIndex++] = m.content[contentIndex];
+            } else if (tokenCurrentIndex != tokenStartIndex) {
+                token[tokenCurrentIndex++] = '\0';
+                insert(tokenBST, token + tokenStartIndex);
+                tokenStartIndex = tokenCurrentIndex;
             }
             contentIndex++;
         }
-        // parse token from each mail
+        tokenBSTs[i] = tokenBST;
     }
     return tokenBSTs;
 }
