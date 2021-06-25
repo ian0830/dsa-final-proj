@@ -26,10 +26,12 @@ int main(){
 		if(answers.find(query_id) == answers.end())
 			continue;
 
-		if(answers[query_id].first == digest)
-			result += answers[query_id].second;
-		else
-			result -= answers[query_id].second * 0.5;
+		if(answers[query_id].first == digest){
+			cout << "query_id: " << query_id << ", AC" << endl;
+			result += answers[query_id].second;}
+		else{
+			cout << "query_id: " << query_id << ", WA" << endl;
+			result -= answers[query_id].second * 0.5;}
 		
 		answers[query_id] = P(0, 0);
 		ans_cnt ++;

@@ -16,21 +16,21 @@ typedef struct node {
     struct node* right;
 } Node;
 
-unsigned long long calculateChecksum(char* string) {
-    int index = 0;
+unsigned long long calculateChecksum(char* string, int length) {
+    
     unsigned long long checksum = 0;
-    while (string[index] != '\0') {
+    for (int index = 0; index < length; index++) {
         checksum = (checksum * encodingSpace + (int)string[index]) % upperBound;
-        index++;
     }
     return checksum;
     // remember not to overflow
 }
 
-void insert(Node* BST, char* string) {
-    // 某子樹的左邊必小於等於某子樹根
-    // 某子樹的右邊必嚴格大於某子樹根
-    unsigned long long checksum = calculateChecksum(string);
+void insert(Node* BST, char* string, int length) {
+    // 某子樹的左邊必嚴格小於某子樹根
+    // 某子樹的右邊必大於等於某子樹根
+    // 如果token 已經存在於BST就不加入了
+    unsigned long long checksum = calculateChecksum(string, length);
     Node* node = malloc(sizeof(Node));
     Node* pointer = BST;
     node->checksum = checksum;
@@ -38,13 +38,14 @@ void insert(Node* BST, char* string) {
     node->left = NULL;
     node->right = NULL;
     while (true) {
-        if (pointer->checksum >= checksum) {
+        if (checksum < pointer->checksum) {
             if (pointer->left == NULL) {
                 pointer->left = node;
                 break;
             } else
                 pointer = pointer->left;
         } else {
+            if (pointer->checksum == checksum && pointer->token != NULL && strcmp(pointer->token, string) == 0) return;
             if (pointer->right == NULL) {
                 pointer->right = node;
                 break;
@@ -55,25 +56,49 @@ void insert(Node* BST, char* string) {
     // insert into BST
 }
 
+bool binarySearch(Node* tokenBST, char* string, int length) {
+    // 某子樹的左邊必嚴格小於某子樹根
+    // 某子樹的右邊必大於等於某子樹根
+    int checksum = calculateChecksum(string, length);
+    Node* node = tokenBST->right;
+    while (node != NULL) {
+        if (checksum < node->checksum) {
+            if (node->left == NULL) {
+                return false;
+            } else {
+                node = node->left;
+            }
+        } else {
+            if (checksum == node->checksum && strncpy(string, node->token, length) == 0) return true;
+            if (node->right == NULL) {
+                return false;
+            } else {
+                node = node->right;
+            }
+        }
+    }
+}
+
 bool isValid(char c) {
     // determine whether A-Za-z0-9
-    return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) ||
-           (c >= 97 && c <= 122);
+    return (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
 
 Node** generateTokenBSTs(mail* mails, int length) {
     Node** tokenBSTs = malloc(sizeof(Node*) * length);
     for (int i = 0; i < length; i++) {
         Node* tokenBST = malloc(sizeof(Node));
+        tokenBST->checksum = 0;  // dummy node 的 checksum 是 0
+        tokenBST->token = tokenBST->left = tokenBST->right = NULL;
         mail m = mails[i];
-        char * token = malloc(sizeof(char) * (contentSize * 2));
+        char* token = malloc(sizeof(char) * (contentSize * 2));
         int tokenStartIndex = 0, tokenCurrentIndex = 0, contentIndex = 0;
         while (m.content[contentIndex] != '\0') {
             if (isValid(m.content[contentIndex])) {
                 token[tokenCurrentIndex++] = m.content[contentIndex];
             } else if (tokenCurrentIndex != tokenStartIndex) {
                 token[tokenCurrentIndex++] = '\0';
-                insert(tokenBST, token + tokenStartIndex);
+                insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex);
                 tokenStartIndex = tokenCurrentIndex;
             }
             contentIndex++;

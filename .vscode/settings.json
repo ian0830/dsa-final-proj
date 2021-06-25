@@ -5,7 +5,17 @@
         "tokenbst.h": "c",
         "findsimilar.h": "c",
         "stdio.h": "c",
-        "groupanalyse.h": "c"
+        "groupanalyse.h": "c",
+        "*.tcc": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "ostream": "c",
+        "array": "c",
+        "iterator": "c",
+        "string_view": "c",
+        "iostream": "cpp"
     },
-    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false}"
+    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false, ColumnLimit: 0}"
 }
