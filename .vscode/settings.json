@@ -7,5 +7,6 @@
         "stdio.h": "c",
         "groupanalyse.h": "c"
     },
-    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false}"
+    "C_Cpp.clang_format_style": "{BasedOnStyle: \"Google\", IndentWidth: 4,SortIncludes: false}",
+    "C_Cpp.errorSquiggles": "Enabled"
 }
