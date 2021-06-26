@@ -82,7 +82,16 @@ Node *searchBST(Node *BST, char *string) {
             }
         }
     }
-    //find the node of the string from BST
+    // find the node of the string from BST
+}
+
+void inorderBST(Node *BST, char **array) {
+    if (BST == NULL) return;
+    if (BST->name == NULL)
+        return inorderBST(BST->right, array);  // for dummy node
+    inorderBST(BST->right, array);
+    array[BST->index] = BST->name;
+    inorderBST(BST->left, array);
 }
 
 Node *generateNameBST(mail *mails, int len, int *mids) {
