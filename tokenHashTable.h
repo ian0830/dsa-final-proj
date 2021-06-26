@@ -1,13 +1,12 @@
 #define contentSize 100000
 #define encodingSpace 36
-#define hashTableSize 10000
+#define hashTableSize 20000
 #define upperBound hashTableSize
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 typedef struct linkedListNode {
     char* token;
@@ -27,10 +26,10 @@ int charIndex(char c) {
     }
 }
 
-unsigned long long calculateChecksum(char* string, int length) {
-    unsigned long long checksum = 0;
+short calculateChecksum(char* string, int length) {
+    short checksum = 0;
     for (int index = 0; index < length; index++) {
-        checksum = (checksum * encodingSpace + charIndex(string[index])) % upperBound;
+        checksum = ((int)checksum * encodingSpace + charIndex(string[index])) % upperBound;
     }
     return checksum;
     // remember not to overflow
@@ -46,15 +45,17 @@ bool caseInsensitiveCmp(char* a, char* b, int length) {
     return same;
 }
 
-bool exist(char* hashTable, char* token, int length) {
+bool exist(LinkedListNode** hashTable, char* token, int length) {
     int checksum = calculateChecksum(token, length);
     if (hashTable[checksum] == NULL)
         return false;
     else {
         LinkedListNode* node = hashTable[checksum];
         bool existance = false;
+        int depth = 0;
         while (node != NULL) {
-            if (caseInsensitiveCmp(node->token, token, length)) {
+            depth++;
+            if (node->length == length && caseInsensitiveCmp(node->token, token, length)) {
                 existance = true;
                 break;
             }
@@ -101,11 +102,11 @@ bool isValid(char c) {
 
 LinkedListNode*** generateTokenHashTables(mail* mails, int length) {
     LinkedListNode*** tokenHashTables = malloc(sizeof(LinkedListNode**) * length);
-    LinkedListNode ** memoryAllocate = malloc(sizeof(LinkedListNode *) * hashTableSize * length);
-    time_t start = time(NULL);
+    LinkedListNode** memoryAllocate = malloc(sizeof(LinkedListNode*) * hashTableSize * length);
+
     for (int i = 0; i < length; i++) {
         LinkedListNode** tokenHashTable = memoryAllocate + hashTableSize * i;
-        for (int j = 0; j< hashTableSize; j++) tokenHashTable[j] = NULL;
+        for (int j = 0; j < hashTableSize; j++) tokenHashTable[j] = NULL;
         mail m = mails[i];
         char* token = malloc(sizeof(char) * (contentSize * 2));
         int tokenStartIndex = 0, tokenCurrentIndex = 0, contentIndex = 0;
@@ -121,6 +122,5 @@ LinkedListNode*** generateTokenHashTables(mail* mails, int length) {
         }
         tokenHashTables[i] = tokenHashTable;
     }
-    fprintf(stderr, "indexing token time consumed: %d\n", time(NULL) - start);
     return tokenHashTables;
 }

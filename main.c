@@ -20,10 +20,11 @@ LinkedListNode *** mailTokenHashTables;
 int main(void) {
     api.init(&n_mails, &n_queries, &mails, &queries);
 
-    
+    time_t start = time(NULL);
     // mailTokenBSTs = generateTokenBSTs(mails, n_mails);
     mailTokenHashTables = generateTokenHashTables(mails, n_mails);
     
+    fprintf(stderr, "indexing token time consumed: %d\n", time(NULL) - start);
     // tested on 06/26
     // printBST(mailTokenBSTs[0]);
 

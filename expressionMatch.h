@@ -98,6 +98,7 @@ void printWords(Word* w) {
 bool calculatePostfix(LinkedListNode ** mailTokenHashTable, Word* postfix, bool print) {
     bool boolStack[1024];
     int stackIndex = -1;
+    // fprintf(stderr, "entered calculatePostfix\n");
     while (postfix -> type != END) {
         if (postfix -> type == TOKEN) {
             // if (print) {
@@ -130,6 +131,7 @@ bool calculatePostfix(LinkedListNode ** mailTokenHashTable, Word* postfix, bool 
 void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, LinkedListNode *** mailTokenHashTables) {
     Word* postfix = infixToPostfix(expression);
     int index = 0;
+    // fprintf(stderr, "infix converted to postfix\n");
     for (int i = 0; i < n_mails; i++) {
         if (calculatePostfix(mailTokenHashTables[i], postfix, i == 1736 || i == 4681)) {
             (answers)[index++] = i;
