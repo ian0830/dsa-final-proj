@@ -19,13 +19,16 @@ int calculateCheckSum(char *string) {  // May occurs collision
     int checkSum = 0;
     int index = 0;
     while (string[index] != '\0') {
-        checkSum = (checkSum * 52 + (int)string[index]) % upperBound;
+        checkSum = (checkSum * encodingSpace + (int)string[index]) % upperBound;
         index++;
     }
     return checkSum;
+    // Ensure overflow won't occur
 }
 
-void insertBST(Node *BST, char *string, int id) {  // with dummy node
+void insertBST(Node *BST, char *string, int id) {
+    // With dummy node, real head stored at dummy.right
+    // Only store specific names in the BST
     Node *pointer = BST;
     Node *node = malloc(sizeof(Node));
     node->checkSum = calculateCheckSum(string);
@@ -33,16 +36,20 @@ void insertBST(Node *BST, char *string, int id) {  // with dummy node
     node->name = string;
     node->left = NULL;
     node->right = NULL;
-    // should be fixed below
     while (true) {
-        if (pointer->checkSum >= node->checkSum) {
+        if (node->checkSum < pointer->checkSum) {
             if (pointer->left == NULL) {
-                pointer->left == node;
+                pointer->left = node;
                 break;
             } else {
                 pointer = pointer->left;
             }
         } else {
+            // Case of collision
+            if ((node->checkSum == pointer->checkSum) &&
+                (pointer->name != NULL) &&
+                (strcmp(node->name, pointer->name) == 0))
+                return;
             if (pointer->right == NULL) {
                 pointer->right = node;
                 break;
@@ -50,8 +57,32 @@ void insertBST(Node *BST, char *string, int id) {  // with dummy node
                 pointer = pointer->right;
             }
         }
-        // insert into BST
     }
+    // Insert into BST
+}
+
+Node *searchBST(Node *BST, char *string) {
+    int checkSum = calculateCheckSum(string);
+    Node *node = BST->right;  // real root
+    while (node != NULL) {
+        if (checkSum < node->checkSum) {
+            if (node->left == NULL) {
+                return false;
+            } else {
+                node = node->left;
+            }
+        } else {
+            if (checkSum == node->checkSum && strcpy(string, node->name) == 0) {
+                return node;
+            }
+            if (node->right == NULL) {
+                return false;
+            } else {
+                node = node->right;
+            }
+        }
+    }
+    //find the node of the string from BST
 }
 
 Node *generateNameBST(mail *mails, int length, int len, int *mids) {
@@ -60,7 +91,7 @@ Node *generateNameBST(mail *mails, int length, int len, int *mids) {
         mail m = mails[mids[id]];
         nameBST->checkSum = 0;
         nameBST->index = -1;
-        nameBST->name = "NA";
+        nameBST->name = NULL;
         nameBST->left = NULL;
         nameBST->right = NULL;
         insertBST(nameBST, m.from, id * 2);
