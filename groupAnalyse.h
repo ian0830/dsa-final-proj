@@ -93,13 +93,14 @@ int DFS(Graph *graph, int len, Node *BST, char **IndexToName, int *answers) {
                 numOfGroups = numOfGroups + 1;
                 int timestart = time;
                 DFSVisit(graph->graphNodeList[index], time, index, IndexToName, BST);
-                int groupSize = (time - timestart) / 2;
+                int groupSize = (time - timestart + 1) / 2;
                 if (groupSize > max) {
                     max = groupSize;
                 }
             }
         }
     }
+    //answerLenghth is 2 (default and fixed)
     answers[0] = numOfGroups;
     answers[1] = max;
     return answers;
@@ -116,6 +117,4 @@ void groupAnalyse(int len, int *mids, int **answers, int *answerLength) {
     }
 
     DFS(graph, len, nameBST, IndexToName, answers);
-    //answerLenghth is 2 (default and fixed)
-    return answers;
 }
