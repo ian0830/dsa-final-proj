@@ -85,7 +85,7 @@ Node *searchBST(Node *BST, char *string) {
     //find the node of the string from BST
 }
 
-Node *generateNameBST(mail *mails, int length, int len, int *mids) {
+Node *generateNameBST(mail *mails, int len, int *mids) {
     Node *nameBST = malloc(sizeof(Node) * len);
     for (int id = 0; id < len; id++) {
         mail m = mails[mids[id]];
