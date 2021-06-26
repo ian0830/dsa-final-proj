@@ -95,7 +95,7 @@ void printWords(Word* w) {
     fprintf(stderr, "\n");
 }
 
-bool calculatePostfix(Node* tokenBST, Word* postfix, bool print) {
+bool calculatePostfix(LinkedListNode ** mailTokenHashTable, Word* postfix, bool print) {
     bool boolStack[1024];
     int stackIndex = -1;
     while (postfix -> type != END) {
@@ -104,7 +104,7 @@ bool calculatePostfix(Node* tokenBST, Word* postfix, bool print) {
             //     printBST(tokenBST);
             //     fprintf(stderr, "binarySearch(tokenBST, %.*s) = %d\n", postfix ->data.token.length, postfix -> data.token.pointer,binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length));
             // }
-            boolStack[++stackIndex] = binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length);
+            boolStack[++stackIndex] = exist(mailTokenHashTable, postfix -> data.token.pointer, postfix ->data.token.length);
         }
         if (postfix -> type == SYMBOL) {
             if (postfix->data.symbol == '!') {
@@ -127,11 +127,11 @@ bool calculatePostfix(Node* tokenBST, Word* postfix, bool print) {
     return boolStack[stackIndex];
 }
 
-void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, Node** mailTokenBSTs) {
+void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, LinkedListNode *** mailTokenHashTables) {
     Word* postfix = infixToPostfix(expression);
     int index = 0;
     for (int i = 0; i < n_mails; i++) {
-        if (calculatePostfix(mailTokenBSTs[i], postfix, i == 1736 || i == 4681)) {
+        if (calculatePostfix(mailTokenHashTables[i], postfix, i == 1736 || i == 4681)) {
             (answers)[index++] = i;
         }
     }

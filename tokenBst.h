@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "api.h"
-
 typedef struct node {
     long long checksum;
     char* token;

@@ -1,7 +1,8 @@
 #include "api.h"
-#include "tokenBst.h"
+// #include "tokenBst.h"
+#include "tokenHashTable.h"
 #include "expressionMatch.h"
-#include "findSimilar.h"
+// #include "findSimilar.h"
 #include "groupAnalyse.h"
 
 #include <time.h>
@@ -13,13 +14,16 @@ int n_mails, n_queries;
 mail *mails;
 query *queries;
 
-Node **mailTokenBSTs;
+// Node **mailTokenBSTs;
+LinkedListNode *** mailTokenHashTables;
 
 int main(void) {
     api.init(&n_mails, &n_queries, &mails, &queries);
-    time_t start = time(NULL);
-    mailTokenBSTs = generateTokenBSTs(mails, n_mails);
-    fprintf(stderr, "mailTokenBSTs time consumed: %d\n", time(NULL) - start);
+
+    
+    // mailTokenBSTs = generateTokenBSTs(mails, n_mails);
+    mailTokenHashTables = generateTokenHashTables(mails, n_mails);
+    
     // tested on 06/26
     // printBST(mailTokenBSTs[0]);
 
@@ -28,7 +32,7 @@ int main(void) {
         int answers[n_mails];
         if (queries[i].type == expression_match) {
             expressionMatch(queries[i].data.expression_match_data.expression, n_mails,
-                            answers, &answerLength, mailTokenBSTs);
+                            answers, &answerLength, mailTokenHashTables);
             api.answer(queries[i].id, answers, answerLength);
         }
         // if (queries[i].type == find_similar) {
