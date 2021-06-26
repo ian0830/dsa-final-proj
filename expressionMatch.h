@@ -2,6 +2,7 @@
 struct substring {
     char* pointer;
     int length;
+    short checksum;
 };
 
 typedef struct word {
@@ -9,12 +10,10 @@ typedef struct word {
         SYMBOL,
         TOKEN,
         END,
-        BOOL
     } type;
     union {
         char symbol;
         struct substring token;
-        bool value;
     } data;
 } Word;
 
@@ -40,6 +39,7 @@ Word readWord(char** string) {
         w.data.token.pointer = *string;
         while (priority(**string) == -1) (*string)++;
         w.data.token.length = (*string) - w.data.token.pointer;
+        w.data.token.checksum = calculateChecksum(w.data.token.pointer, w.data.token.length);
     } else {
         w.type = SYMBOL;
         w.data.symbol = **string;
@@ -95,40 +95,116 @@ void printWords(Word* w) {
     fprintf(stderr, "\n");
 }
 
-bool calculatePostfix(LinkedListNode ** mailTokenHashTable, Word* postfix, bool print) {
-    bool boolStack[1024];
+struct expr {
+    bool eval;
+    Word* token;
+    bool result;
+};
+int calcAndReturnDelta(char c, struct expr* tokenStack, LinkedListNode** mailTokenHashTable, int lastIndex) {
+    if (c == '!') {
+        struct expr* a = tokenStack + lastIndex;
+        if (a->eval == false) {
+            a->eval = true;
+            a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
+        }
+        a->result = !(a->result);
+        return 0;
+    }
+    if (c == '&') {
+        fflush(stderr);
+        struct expr* a = tokenStack + lastIndex;
+        struct expr* b = tokenStack + (lastIndex - 1);
+        if ((a->eval == true && a->result == false) || (b->eval == true && b->result == false)) {
+            
+            tokenStack[lastIndex - 1].eval = true;
+            tokenStack[lastIndex - 1].result = false;
+            return -1;
+        } else {
+            if (a->eval == false) {
+                a->eval = true;
+                a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
+            }
+            if (a->result == false) {
+                tokenStack[lastIndex - 1].eval = true;
+                tokenStack[lastIndex - 1].result = false;
+                return -1;
+            }
+            if (b->eval == false) {
+                b->eval = true;
+                b->result = exist(mailTokenHashTable, b->token->data.token.pointer, b->token->data.token.length, b->token->data.token.checksum);
+            }
+            tokenStack[lastIndex - 1].result = (b->result);
+            return -1;
+        }
+    }
+    if (c == '|') {
+        struct expr* a = tokenStack + lastIndex;
+        struct expr* b = tokenStack + (lastIndex - 1);
+        if ((a->eval == true && a->result == true) || (b->eval == true && b->result == true)) {
+            tokenStack[lastIndex - 1].eval = true;
+            tokenStack[lastIndex - 1].result = true;
+            return -1;
+        } else {
+            if (a->eval == false) {
+                a->eval = true;
+                a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
+            }
+            if (a->result == true) {
+                tokenStack[lastIndex - 1].eval = true;
+                tokenStack[lastIndex - 1].result = true;
+                return -1;
+            }
+            if (b->eval == false) {
+                b->eval = true;
+                b->result = exist(mailTokenHashTable, b->token->data.token.pointer, b->token->data.token.length, b->token->data.token.checksum);
+            }
+            tokenStack[lastIndex - 1].result = (b->result);
+            return -1;
+        }
+    }
+}
+
+bool calculatePostfix(LinkedListNode** mailTokenHashTable, Word* postfix, bool print) {
+    struct expr tokenStack[1024];
     int stackIndex = -1;
     // fprintf(stderr, "entered calculatePostfix\n");
-    while (postfix -> type != END) {
-        if (postfix -> type == TOKEN) {
+    while (postfix->type != END) {
+        if (postfix->type == TOKEN) {
             // if (print) {
             //     printBST(tokenBST);
             //     fprintf(stderr, "binarySearch(tokenBST, %.*s) = %d\n", postfix ->data.token.length, postfix -> data.token.pointer,binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length));
             // }
-            boolStack[++stackIndex] = exist(mailTokenHashTable, postfix -> data.token.pointer, postfix ->data.token.length);
+            tokenStack[++stackIndex].eval = false;
+            tokenStack[stackIndex].token = postfix;
+            // tokenStack[++stackIndex] = postfix;
         }
-        if (postfix -> type == SYMBOL) {
-            if (postfix->data.symbol == '!') {
-                bool a = boolStack[stackIndex--];
-                boolStack[++stackIndex] = !a;
-            }
-            if (postfix->data.symbol == '&') {
-                bool a = boolStack[stackIndex--];
-                bool b = boolStack[stackIndex--];
-                boolStack[++stackIndex] = a && b;
-            }
-            if (postfix->data.symbol == '|') {
-                bool a = boolStack[stackIndex--];
-                bool b = boolStack[stackIndex--];
-                boolStack[++stackIndex] = a || b;
-            }
+        if (postfix->type == SYMBOL) {
+            stackIndex += calcAndReturnDelta(postfix->data.symbol, tokenStack, mailTokenHashTable, stackIndex);
+            // if (postfix->data.symbol == '!') {
+            //     bool a = boolStack[stackIndex--];
+            //     boolStack[++stackIndex] = !a;
+            // }
+            // if (postfix->data.symbol == '&') {
+            //     bool a = boolStack[stackIndex--];
+            //     bool b = boolStack[stackIndex--];
+            //     boolStack[++stackIndex] = a && b;
+            // }
+            // if (postfix->data.symbol == '|') {
+            //     bool a = boolStack[stackIndex--];
+            //     bool b = boolStack[stackIndex--];
+            //     boolStack[++stackIndex] = a || b;
+            // }
         }
         postfix++;
     }
-    return boolStack[stackIndex];
+    if (tokenStack[stackIndex].eval == false) {
+        tokenStack[stackIndex].eval = true;
+        tokenStack[stackIndex].result = exist(mailTokenHashTable, tokenStack[stackIndex].token->data.token.pointer, tokenStack[stackIndex].token->data.token.length, tokenStack[stackIndex].token->data.token.checksum);
+    }
+    return tokenStack[stackIndex].result;
 }
 
-void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, LinkedListNode *** mailTokenHashTables) {
+void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, LinkedListNode*** mailTokenHashTables) {
     Word* postfix = infixToPostfix(expression);
     int index = 0;
     // fprintf(stderr, "infix converted to postfix\n");
@@ -137,6 +213,7 @@ void expressionMatch(char* expression, int n_mails, int* answers, int* answerLen
             (answers)[index++] = i;
         }
     }
+    free(postfix);
     *answerLength = index;
     return;
 }

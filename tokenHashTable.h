@@ -45,16 +45,13 @@ bool caseInsensitiveCmp(char* a, char* b, int length) {
     return same;
 }
 
-bool exist(LinkedListNode** hashTable, char* token, int length) {
-    int checksum = calculateChecksum(token, length);
+bool exist(LinkedListNode** hashTable, char* token, int length, short checksum) {
     if (hashTable[checksum] == NULL)
         return false;
     else {
         LinkedListNode* node = hashTable[checksum];
         bool existance = false;
-        int depth = 0;
         while (node != NULL) {
-            depth++;
             if (node->length == length && caseInsensitiveCmp(node->token, token, length)) {
                 existance = true;
                 break;
