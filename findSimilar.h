@@ -39,9 +39,9 @@ int Size(Node* node, int number) {
     else
         return 1 + Size(node->right, 0);
 }
-int index = 0;
+int idx = 0;
 void GiveChecksum(unsigned long long** Purpose, Node* node) {
-    (*Purpose)[index] = node->checksum;
+    (*Purpose)[idx] = node->checksum;
     if (node->left != NULL) {
         GiveChecksum(&(*Purpose), node->left);
     }
@@ -96,7 +96,7 @@ void split(SimilarBST* S, int thresold, SimilarBST** a, SimilarBST** b) {
 int pos = 0;
 void writeIn(SimilarBST* node, int** answers) {
     if (node->left !=NULL)
-        wirteIn(node->left, &answers);
+        writeIn(node->left, &answers);
     (*answers)[pos] = node->position;
     if (node->right != NULL)
         writeIn(node->right, &answers);
@@ -129,5 +129,5 @@ void findSimilar(int mid, double threshold, int** answers, int* answerLength,
     SimilarBST* a = malloc(sizeof(SimilarBST));
     SimilarBST* b = malloc(sizeof(SimilarBST));
     split(Root, threshold, &a, &b);
-    wirteIn(Root, &answers);
+    writeIn(Root, &answers);
 }

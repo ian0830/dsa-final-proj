@@ -4,6 +4,8 @@
 #include "findSimilar.h"
 #include "groupAnalyse.h"
 
+#include <time.h>
+
 // The testdata only contains the first 100 mails (mail1 ~ mail100)
 // and 2000 queries for you to debug.
 
@@ -13,20 +15,12 @@ query *queries;
 
 Node **mailTokenBSTs;
 
-// tested on 06/26 00:30
-// void printBST(Node *node) {
-//     if (node == NULL) {
-//         return;
-//     }
-//     printBST(node->left);
-//     fprintf(stderr, "%s(%d) ", node->token, node->checksum);
-//     printBST(node->right);
-// }
-
 int main(void) {
     api.init(&n_mails, &n_queries, &mails, &queries);
-
+    time_t start = time(NULL);
     mailTokenBSTs = generateTokenBSTs(mails, n_mails);
+    fprintf(stderr, "mailTokenBSTs time consumed: %d\n", time(NULL) - start);
+    // tested on 06/26
     // printBST(mailTokenBSTs[0]);
 
     for (int i = 0; i < n_queries; i++) {
@@ -35,9 +29,6 @@ int main(void) {
         if (queries[i].type == expression_match) {
             expressionMatch(queries[i].data.expression_match_data.expression, n_mails,
                             answers, &answerLength, mailTokenBSTs);
-            
-            fprintf(stderr, "answerLength: %d\n", answerLength);
-           
             api.answer(queries[i].id, answers, answerLength);
         }
         // if (queries[i].type == find_similar) {

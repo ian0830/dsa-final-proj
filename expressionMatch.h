@@ -100,9 +100,10 @@ bool calculatePostfix(Node* tokenBST, Word* postfix, bool print) {
     int stackIndex = -1;
     while (postfix -> type != END) {
         if (postfix -> type == TOKEN) {
-            if (print) {
-                fprintf(stderr, "binarySearch(tokenBST, %.*s) = %d\n", postfix ->data.token.length, postfix -> data.token.pointer,binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length));
-            }
+            // if (print) {
+            //     printBST(tokenBST);
+            //     fprintf(stderr, "binarySearch(tokenBST, %.*s) = %d\n", postfix ->data.token.length, postfix -> data.token.pointer,binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length));
+            // }
             boolStack[++stackIndex] = binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length);
         }
         if (postfix -> type == SYMBOL) {
@@ -127,17 +128,13 @@ bool calculatePostfix(Node* tokenBST, Word* postfix, bool print) {
 }
 
 void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, Node** mailTokenBSTs) {
-    fprintf(stderr, "infix: %s\n", expression);
-    fprintf(stderr, "postfix: ");
     Word* postfix = infixToPostfix(expression);
-    printWords(postfix);
     int index = 0;
     for (int i = 0; i < n_mails; i++) {
-        if (calculatePostfix(mailTokenBSTs[i], postfix, i == 1736)) {
+        if (calculatePostfix(mailTokenBSTs[i], postfix, i == 1736 || i == 4681)) {
             (answers)[index++] = i;
         }
     }
     *answerLength = index;
-     fprintf(stderr, "answerLength: %d\n", *answerLength);
     return;
 }

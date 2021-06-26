@@ -1,5 +1,5 @@
 #define contentSize 100000
-#define encodingSpace 62
+#define encodingSpace 36
 #define upperBound 2147483647
 
 #include <stdbool.h>
@@ -16,11 +16,22 @@ typedef struct node {
     struct node* right;
 } Node;
 
+int charIndex(char c) {
+    if (c >= 48 && c <= 57) {
+        return (int)c - 48;
+    }
+    if (c >= 65 && c <= 90) {
+        return 10 + (int)c - 65;
+    }
+    if (c >= 97 && c <= 122) {
+        return 10 + (int)c - 97;
+    }
+}
+
 unsigned long long calculateChecksum(char* string, int length) {
-    
     unsigned long long checksum = 0;
     for (int index = 0; index < length; index++) {
-        checksum = (checksum * encodingSpace + (int)string[index]) % upperBound;
+        checksum = (checksum * encodingSpace + charIndex(string[index])) % upperBound;
     }
     return checksum;
     // remember not to overflow
@@ -56,6 +67,17 @@ void insert(Node* BST, char* string, int length) {
     // insert into BST
 }
 
+bool caseInsensitiveCmp(char* a, char* b, int length) {
+    bool same = true;
+    for (int i = 0; i < length; i++) {
+        if (charIndex(a[i]) != charIndex(b[i])) {
+            same = false;
+            break;
+        }
+    }
+    return same;
+}
+
 bool binarySearch(Node* tokenBST, char* string, int length) {
     // 某子樹的左邊必嚴格小於某子樹根
     // 某子樹的右邊必大於等於某子樹根
@@ -69,7 +91,7 @@ bool binarySearch(Node* tokenBST, char* string, int length) {
                 node = node->left;
             }
         } else {
-            if (checksum == node->checksum && strncpy(string, node->token, length) == 0) return true;
+            if (checksum == node->checksum && strlen(node->token) == length && caseInsensitiveCmp(string, node->token, length)) return true;
             if (node->right == NULL) {
                 return false;
             } else {
@@ -77,6 +99,14 @@ bool binarySearch(Node* tokenBST, char* string, int length) {
             }
         }
     }
+}
+void printBST(Node* node) {
+    if (node == NULL) {
+        return;
+    }
+    printBST(node->left);
+    fprintf(stderr, "%s(%d) ", node->token, node->checksum);
+    printBST(node->right);
 }
 
 bool isValid(char c) {
@@ -98,7 +128,7 @@ Node** generateTokenBSTs(mail* mails, int length) {
                 token[tokenCurrentIndex++] = m.content[contentIndex];
             } else if (tokenCurrentIndex != tokenStartIndex) {
                 token[tokenCurrentIndex++] = '\0';
-                insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex);
+                insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex - 1);
                 tokenStartIndex = tokenCurrentIndex;
             }
             contentIndex++;
