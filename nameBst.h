@@ -1,5 +1,7 @@
 #define encodingSpace 52
 #define upperBound 2147483647
+#define upperLimit 41297760
+//#define testData 15
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,104 +9,120 @@
 
 #include "api.h"
 
-typedef struct node {
+typedef struct nameNode {
     int checkSum;
     int index;
     char *name;
-    struct node *left;
-    struct node *right;
-} Node;
+    struct nameNode *left;
+    struct nameNode *right;
+} NameNode;
 
 int calculateCheckSum(char *string) {  // May occurs collision
     int checkSum = 0;
     int index = 0;
     while (string[index] != '\0') {
-        checkSum = (checkSum * encodingSpace + (int)string[index]) % upperBound;
+        checkSum = (checkSum * encodingSpace + (int)string[index]) % upperLimit;
+        //fprintf(stderr, "==checkSum %d\n", checkSum);
         index++;
     }
     return checkSum;
     // Ensure overflow won't occur
 }
 
-void insertBST(Node *BST, char *string, int id) {
+NameNode *insertBST(NameNode *nameBST, char *string, int id) {
     // With dummy node, real head stored at dummy.right
     // Only store specific names in the BST
-    Node *pointer = BST;
-    Node *node = malloc(sizeof(Node));
-    node->checkSum = calculateCheckSum(string);
-    node->index = id;
-    node->name = string;
-    node->left = NULL;
-    node->right = NULL;
+    //fprintf(stderr, "::::::::::::::insertBST::::::::::::\n");
+    NameNode *ptr = nameBST;
+    NameNode *nameNode = malloc(sizeof(NameNode));
+    nameNode->checkSum = calculateCheckSum(string);
+    nameNode->index = id;
+    nameNode->name = string;
+    nameNode->left = NULL;
+    nameNode->right = NULL;
+    //fprintf(stderr, "=======insertBST %s %d======\n", string, nameNode->checkSum);
     while (true) {
-        if (node->checkSum < pointer->checkSum) {
-            if (pointer->left == NULL) {
-                pointer->left = node;
-                break;
+        if (nameNode->checkSum < ptr->checkSum) {
+            if (ptr->left == NULL) {
+                ptr->left = nameNode;
+                //fprintf(stderr, "insert left: %s %d\n", ptr->name, ptr->checkSum);
+                return nameBST;
             } else {
-                pointer = pointer->left;
+                ptr = ptr->left;
             }
         } else {
             // Case of collision
-            if ((node->checkSum == pointer->checkSum) &&
-                (pointer->name != NULL) &&
-                (strcmp(node->name, pointer->name) == 0))
-                return;
-            if (pointer->right == NULL) {
-                pointer->right = node;
-                break;
+            if ((nameNode->checkSum == ptr->checkSum) && (ptr->name != NULL) && (strcmp(nameNode->name, ptr->name) == 0)){
+                //fprintf(stderr, "=======collision name %s======\n", string);
+                return nameBST;
+            }
+            if (ptr->right == NULL) {
+                ptr->right = nameNode;
+                //fprintf(stderr, "insert right: %s %d\n", ptr->name, ptr->checkSum);
+                return nameBST;
             } else {
-                pointer = pointer->right;
+                ptr = ptr->right;
             }
         }
     }
     // Insert into BST
 }
 
-Node *searchBST(Node *BST, char *string) {
+NameNode *searchBST(NameNode *nameBST, char *string) {
+    //fprintf(stderr, "::::::::::::::searchBST::::::::::::\n");
     int checkSum = calculateCheckSum(string);
-    Node *node = BST->right;  // real root
-    while (node != NULL) {
-        if (checkSum < node->checkSum) {
-            if (node->left == NULL) {
+    NameNode *nameNode = nameBST->right;  // real root
+
+    while (nameNode != NULL) {
+        if (checkSum < nameNode->checkSum) {
+            if (nameNode->left == NULL) {
                 return false;
             } else {
-                node = node->left;
+                nameNode = nameNode->left;
             }
         } else {
-            if (checkSum == node->checkSum && strcpy(string, node->name) == 0) {
-                return node;
+            if ((checkSum == nameNode->checkSum) && (strcmp(string, nameNode->name) == 0)) {
+                return nameNode;
             }
-            if (node->right == NULL) {
+            if (nameNode->right == NULL) {
                 return false;
             } else {
-                node = node->right;
+                nameNode = nameNode->right;
             }
         }
     }
     // find the node of the string from BST
 }
 
-void inorderBST(Node *BST, char **array) {
-    if (BST == NULL) return;
-    if (BST->name == NULL)
-        return inorderBST(BST->right, array);  // for dummy node
-    inorderBST(BST->right, array);
-    array[BST->index] = BST->name;
-    inorderBST(BST->left, array);
+void inorderBST(NameNode *nameBST, char **array) {
+    if (nameBST == NULL) return;
+    if (nameBST->name == NULL)
+        return inorderBST(nameBST->right, array);  // for dummy node
+    inorderBST(nameBST->left, array);
+    array[nameBST->index] = nameBST->name;
+    //fprintf(stderr, "inorderBST node: %s %d %d\n", array[nameBST->index], nameBST->index, nameBST->checkSum);
+    inorderBST(nameBST->right, array);
 }
 
-Node *generateNameBST(mail *mails, int len, int *mids) {
-    Node *nameBST = malloc(sizeof(Node) * len);
+void inorderTraversalBST(NameNode *nameBST) {
+    if (nameBST == NULL) return;
+    if (nameBST->name == NULL)
+        return inorderTraversalBST(nameBST->right);
+    inorderTraversalBST(nameBST->left);
+    fprintf(stderr, "nameBST node: %s %d %d\n", nameBST->name, nameBST->checkSum, nameBST->index);
+    inorderTraversalBST(nameBST->right);
+}
+
+NameNode *generateNameBST(mail *mails, int len, int *mids) {
+    NameNode *nameBST = malloc(sizeof(NameNode) * len);
+    nameBST->checkSum = nameBST->index = -1;
+    nameBST->name = nameBST->left = nameBST->right = NULL;
     for (int id = 0; id < len; id++) {
-        mail m = mails[mids[id]];
-        nameBST->checkSum = 0;
-        nameBST->index = -1;
-        nameBST->name = NULL;
-        nameBST->left = NULL;
-        nameBST->right = NULL;
-        insertBST(nameBST, m.from, id * 2);
-        insertBST(nameBST, m.to, id * 2 + 1);
+        mail *m = mails + mids[id];
+        nameBST = insertBST(nameBST, m->from, id * 2);
+        nameBST = insertBST(nameBST, m->to, id * 2 + 1);
+        //fprintf(stderr, "insert %s %s\n", m->from, m->to);
     }
+    //inorderTraversalBST(nameBST);
     return nameBST;
 }
