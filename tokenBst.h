@@ -1,4 +1,4 @@
-#define contentSize 100000
+#define contentSize 100256
 #define encodingSpace 36
 #define upperBound 2147483647
 
@@ -130,6 +130,17 @@ Node** generateTokenBSTs(mail* mails, int length) {
                 tokenStartIndex = tokenCurrentIndex;
             }
             contentIndex++;
+        }
+        tokenStartIndex = 0, tokenCurrentIndex = 0; int subjectIndex = 0;
+        while (m.subject[subjectIndex] != '\0') {
+            if (isValid(m.subject[subjectIndex])) {
+                token[tokenCurrentIndex++] = m.subject[subjectIndex];
+            } else if (tokenCurrentIndex != tokenStartIndex) {
+                token[tokenCurrentIndex++] = '\0';
+                insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex - 1);
+                tokenStartIndex = tokenCurrentIndex;
+            }
+            subjectIndex++;
         }
         tokenBSTs[i] = tokenBST;
     }
