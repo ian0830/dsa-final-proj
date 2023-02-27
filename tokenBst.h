@@ -35,6 +35,17 @@ unsigned long long calculateChecksum(char* string, int length) {
     // remember not to overflow
 }
 
+bool caseInsensitiveCmp(char* a, char* b, int length) {
+    bool same = true;
+    for (int i = 0; i < length; i++) {
+        if (charIndex(a[i]) != charIndex(b[i])) {
+            same = false;
+            break;
+        }
+    }
+    return same;
+}
+
 void insert(Node* BST, char* string, int length) {
     // 某子樹的左邊必嚴格小於某子樹根
     // 某子樹的右邊必大於等於某子樹根
@@ -54,7 +65,10 @@ void insert(Node* BST, char* string, int length) {
             } else
                 pointer = pointer->left;
         } else {
-            if (pointer->checksum == checksum && pointer->token != NULL && strcmp(pointer->token, string) == 0) return;
+            if (pointer->checksum == checksum && pointer->token != NULL && caseInsensitiveCmp(pointer->token, string, length)) {
+                // fprintf(stderr, "bypass inserting %.*s\n", length, string );
+                return;
+            }
             if (pointer->right == NULL) {
                 pointer->right = node;
                 break;
@@ -63,17 +77,6 @@ void insert(Node* BST, char* string, int length) {
         }
     }
     // insert into BST
-}
-
-bool caseInsensitiveCmp(char* a, char* b, int length) {
-    bool same = true;
-    for (int i = 0; i < length; i++) {
-        if (charIndex(a[i]) != charIndex(b[i])) {
-            same = false;
-            break;
-        }
-    }
-    return same;
 }
 
 bool binarySearch(Node* tokenBST, char* string, int length) {
@@ -131,7 +134,12 @@ Node** generateTokenBSTs(mail* mails, int length) {
             }
             contentIndex++;
         }
-        tokenStartIndex = 0, tokenCurrentIndex = 0; int subjectIndex = 0;
+        if (tokenCurrentIndex != tokenStartIndex) {
+            token[tokenCurrentIndex++] = '\0';
+            insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex - 1);
+            tokenStartIndex = tokenCurrentIndex;
+        }
+        int subjectIndex = 0;
         while (m.subject[subjectIndex] != '\0') {
             if (isValid(m.subject[subjectIndex])) {
                 token[tokenCurrentIndex++] = m.subject[subjectIndex];
@@ -141,6 +149,11 @@ Node** generateTokenBSTs(mail* mails, int length) {
                 tokenStartIndex = tokenCurrentIndex;
             }
             subjectIndex++;
+        }
+        if (tokenCurrentIndex != tokenStartIndex) {
+            token[tokenCurrentIndex++] = '\0';
+            insert(tokenBST, token + tokenStartIndex, tokenCurrentIndex - tokenStartIndex - 1);
+            tokenStartIndex = tokenCurrentIndex;
         }
         tokenBSTs[i] = tokenBST;
     }

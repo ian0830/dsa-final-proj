@@ -2,7 +2,7 @@
 struct substring {
     char* pointer;
     int length;
-    short checksum;
+    int checksum;
 };
 
 typedef struct word {
@@ -95,123 +95,167 @@ void printWords(Word* w) {
     fprintf(stderr, "\n");
 }
 
-struct expr {
-    bool eval;
-    Word* token;
-    bool result;
-};
-int calcAndReturnDelta(char c, struct expr* tokenStack, LinkedListNode** mailTokenHashTable, int lastIndex) {
+// struct expr {
+//     bool eval;
+//     MidLinkedListNode * token;
+//     bool result;
+// };
+
+void printMids(MidLinkedListNode* n) {
+    while (n != NULL) {
+        fprintf(stderr, "%d ", n->mid);
+        n = n->next;
+    }
+    fprintf(stderr, "\n");
+}
+int calcAndReturnDelta(char c, MidLinkedListNode** tokenStack, MidLinkedListNode* nodePool, int* nodePoolIndex, int n_mails, int lastIndex) {
     if (c == '!') {
-        struct expr* a = tokenStack + lastIndex;
-        if (a->eval == false) {
-            a->eval = true;
-            a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
+        // fprintf(stderr, "!");
+        MidLinkedListNode* node = tokenStack[lastIndex];
+        // printMids(node);
+
+        // fprintf(stderr, "%p", node);
+        MidLinkedListNode* head = NULL;
+        MidLinkedListNode* tail = NULL;
+        for (int i = 0; i < n_mails; i++) {
+            if (node == NULL) {
+                MidLinkedListNode* n = nodePool + ((*nodePoolIndex)++);
+                n->mid = i;
+                n->next = NULL;
+                if (tail != NULL) {
+                    tail->next = n;
+                    tail = n;
+                } else {
+                    head = n;
+                    tail = n;
+                }
+            } else {
+                if (i < (node->mid)) {
+                    MidLinkedListNode* n = nodePool + ((*nodePoolIndex)++);
+                    n->mid = i;
+                    if (tail != NULL) {
+                        tail->next = n;
+                        tail = n;
+                    } else {
+                        head = n;
+                        tail = n;
+                    }
+                } else {
+                    node = node->next;
+                }
+            }
         }
-        a->result = !(a->result);
+        if (tail) tail->next = NULL;
+        tokenStack[lastIndex] = head;
+        // printMids(head);
         return 0;
     }
     if (c == '&') {
-        fflush(stderr);
-        struct expr* a = tokenStack + lastIndex;
-        struct expr* b = tokenStack + (lastIndex - 1);
-        if ((a->eval == true && a->result == false) || (b->eval == true && b->result == false)) {
-            
-            tokenStack[lastIndex - 1].eval = true;
-            tokenStack[lastIndex - 1].result = false;
-            return -1;
-        } else {
-            if (a->eval == false) {
-                a->eval = true;
-                a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
-            }
-            if (a->result == false) {
-                tokenStack[lastIndex - 1].eval = true;
-                tokenStack[lastIndex - 1].result = false;
-                return -1;
-            }
-            if (b->eval == false) {
-                b->eval = true;
-                b->result = exist(mailTokenHashTable, b->token->data.token.pointer, b->token->data.token.length, b->token->data.token.checksum);
-            }
-            tokenStack[lastIndex - 1].result = (b->result);
+        // fprintf(stderr, "&");
+        // fprintf(stderr, "lastIndex = %d,", lastIndex);
+        MidLinkedListNode* nodeA = tokenStack[lastIndex];
+        MidLinkedListNode* nodeB = tokenStack[lastIndex - 1];
+        if (nodeA == NULL || nodeB == NULL) {
+            tokenStack[lastIndex - 1] = NULL;
             return -1;
         }
+        MidLinkedListNode* head = NULL;
+        MidLinkedListNode* tail = NULL;
+        for (int i = 0; i < n_mails; i++) {
+            if ((nodeA && i == nodeA->mid) && (nodeB && i == nodeB->mid)) {
+                MidLinkedListNode* n = nodePool + ((*nodePoolIndex)++);
+                n->mid = i;
+                n->next = NULL;
+                if (tail != NULL) {
+                    tail->next = n;
+                    tail = n;
+                } else {
+                    head = n;
+                    tail = n;
+                }
+            }
+            if (nodeA && nodeA->mid <= i) {
+                nodeA = nodeA->next;
+            }
+            if (nodeB && nodeB->mid <= i) {
+                nodeB = nodeB->next;
+            }
+        }
+        if (tail) tail->next = NULL;
+        tokenStack[lastIndex - 1] = head;
+        return -1;
     }
     if (c == '|') {
-        struct expr* a = tokenStack + lastIndex;
-        struct expr* b = tokenStack + (lastIndex - 1);
-        if ((a->eval == true && a->result == true) || (b->eval == true && b->result == true)) {
-            tokenStack[lastIndex - 1].eval = true;
-            tokenStack[lastIndex - 1].result = true;
-            return -1;
-        } else {
-            if (a->eval == false) {
-                a->eval = true;
-                a->result = exist(mailTokenHashTable, a->token->data.token.pointer, a->token->data.token.length, a->token->data.token.checksum);
-            }
-            if (a->result == true) {
-                tokenStack[lastIndex - 1].eval = true;
-                tokenStack[lastIndex - 1].result = true;
-                return -1;
-            }
-            if (b->eval == false) {
-                b->eval = true;
-                b->result = exist(mailTokenHashTable, b->token->data.token.pointer, b->token->data.token.length, b->token->data.token.checksum);
-            }
-            tokenStack[lastIndex - 1].result = (b->result);
+        // fprintf(stderr, "|");
+        MidLinkedListNode* nodeA = tokenStack[lastIndex];
+        MidLinkedListNode* nodeB = tokenStack[lastIndex - 1];
+        if (nodeA == NULL) {
+            tokenStack[lastIndex - 1] = nodeB;
             return -1;
         }
+        if (nodeB == NULL) {
+            tokenStack[lastIndex - 1] = nodeA;
+            return -1;
+        }
+        MidLinkedListNode* head = NULL;
+        MidLinkedListNode* tail = NULL;
+        for (int i = 0; i < n_mails; i++) {
+            if ((nodeA && i == nodeA->mid) || (nodeB && i == nodeB->mid)) {
+                MidLinkedListNode* n = nodePool + ((*nodePoolIndex)++);
+                n->mid = i;
+                n->next = NULL;
+                if (tail != NULL) {
+                    tail->next = n;
+                    tail = n;
+                } else {
+                    head = n;
+                    tail = n;
+                }
+            }
+            if (nodeA && nodeA->mid <= i) {
+                nodeA = nodeA->next;
+            }
+            if (nodeB && nodeB->mid <= i) {
+                nodeB = nodeB->next;
+            }
+        }
+        // fprintf(stderr, "endfor");
+        if (tail) tail->next = NULL;
+        tokenStack[lastIndex - 1] = head;
+        return -1;
     }
 }
 
-bool calculatePostfix(LinkedListNode** mailTokenHashTable, Word* postfix, bool print) {
-    struct expr tokenStack[1024];
+
+MidLinkedListNode* calculatePostfix(TokenLinkedListNode** mailTokenHashTable, Word* postfix, MidLinkedListNode* nodePool, int n_mails) {
+    MidLinkedListNode* tokenStack[1024];
+    int nodePoolIndex = 0;
+
     int stackIndex = -1;
     // fprintf(stderr, "entered calculatePostfix\n");
     while (postfix->type != END) {
         if (postfix->type == TOKEN) {
-            // if (print) {
-            //     printBST(tokenBST);
-            //     fprintf(stderr, "binarySearch(tokenBST, %.*s) = %d\n", postfix ->data.token.length, postfix -> data.token.pointer,binarySearch(tokenBST, postfix -> data.token.pointer, postfix ->data.token.length));
-            // }
-            tokenStack[++stackIndex].eval = false;
-            tokenStack[stackIndex].token = postfix;
-            // tokenStack[++stackIndex] = postfix;
+            // fprintf(stderr, "%.*s",  postfix->data.token.length, postfix->data.token.pointer);
+            // printMids(getTokenOccurenceMids(mailTokenHashTable, postfix->data.token.pointer, postfix->data.token.length, postfix->data.token.checksum));
+            tokenStack[++stackIndex] = getTokenOccurenceMids(mailTokenHashTable, postfix->data.token.pointer, postfix->data.token.length, postfix->data.token.checksum);
         }
         if (postfix->type == SYMBOL) {
-            stackIndex += calcAndReturnDelta(postfix->data.symbol, tokenStack, mailTokenHashTable, stackIndex);
-            // if (postfix->data.symbol == '!') {
-            //     bool a = boolStack[stackIndex--];
-            //     boolStack[++stackIndex] = !a;
-            // }
-            // if (postfix->data.symbol == '&') {
-            //     bool a = boolStack[stackIndex--];
-            //     bool b = boolStack[stackIndex--];
-            //     boolStack[++stackIndex] = a && b;
-            // }
-            // if (postfix->data.symbol == '|') {
-            //     bool a = boolStack[stackIndex--];
-            //     bool b = boolStack[stackIndex--];
-            //     boolStack[++stackIndex] = a || b;
-            // }
+            stackIndex += calcAndReturnDelta(postfix->data.symbol, tokenStack, nodePool, &nodePoolIndex, n_mails, stackIndex);
+            // printMids(tokenStack[stackIndex]);
         }
         postfix++;
     }
-    if (tokenStack[stackIndex].eval == false) {
-        tokenStack[stackIndex].eval = true;
-        tokenStack[stackIndex].result = exist(mailTokenHashTable, tokenStack[stackIndex].token->data.token.pointer, tokenStack[stackIndex].token->data.token.length, tokenStack[stackIndex].token->data.token.checksum);
-    }
-    return tokenStack[stackIndex].result;
+    //remember to persist tokenStack[st]
+    return tokenStack[stackIndex];
 }
 
-void expressionMatch(char* expression, int n_mails, int* answers, int* answerLength, LinkedListNode*** mailTokenHashTables) {
+void expressionMatch(char* expression, int n_mails, MidLinkedListNode* nodePool, int* answers, int* answerLength, TokenLinkedListNode** mailTokenOccurenceHashTable) {
     Word* postfix = infixToPostfix(expression);
     int index = 0;
-    // fprintf(stderr, "infix converted to postfix\n");
-    for (int i = 0; i < n_mails; i++) {
-        if (calculatePostfix(mailTokenHashTables[i], postfix, i == 1736 || i == 4681)) {
-            (answers)[index++] = i;
-        }
+    MidLinkedListNode* node = (calculatePostfix(mailTokenOccurenceHashTable, postfix, nodePool, n_mails));
+    while (node != NULL) {
+        answers[index++] = node->mid;
+        node = node->next;
     }
     free(postfix);
     *answerLength = index;

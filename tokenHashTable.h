@@ -82,6 +82,7 @@ void printHashTable(LinkedListNode** hashTable) {
             LinkedListNode* node = hashTable[i];
             while (node != NULL) {
                 fprintf(stderr, "%.*s(%d) ", node->length, node->token, i);
+                
                 // collection[collectionIndex].checksum = i;
                 // collection[collectionIndex].node = node;
                 // collectionIndex ++;

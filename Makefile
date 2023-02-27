@@ -1,4 +1,4 @@
-main: main.c api.h tokenBst.h expressionMatch.h findSimilar.h groupAnalyse.h tokenHashTable.h
+main: main.c api.h tokenBst.h expressionMatch.h findSimilar.h groupAnalyse.h tokenHashTable.h nameBst.h tokenOccurenceHashTable.h
 	gcc main.c -o main -O3 -std=c11 -w
 
 validator/validator: validator/validator.cpp
